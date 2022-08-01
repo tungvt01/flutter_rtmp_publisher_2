@@ -14,9 +14,9 @@ enum Facing { back, front }
 /// Retrieved from [Camera.getCameraInfo].
 class CameraInfo implements CameraDescriptionNew {
   const CameraInfo({
-    @required this.id,
-    @required this.facing,
-    @required this.orientation,
+    required this.id,
+    required this.facing,
+    required this.orientation,
   })  : assert(id != null),
         assert(facing != null),
         assert(orientation != null);
@@ -63,6 +63,5 @@ class CameraInfo implements CameraDescriptionNew {
         return LensDirection.back;
     }
 
-    return null;
   }
 }

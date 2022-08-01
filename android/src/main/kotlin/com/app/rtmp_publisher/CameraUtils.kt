@@ -13,7 +13,6 @@ import android.media.CamcorderProfile
 import android.os.Build
 import android.util.Size
 import androidx.annotation.RequiresApi
-import com.app.rtmp_publisher.Camera.ResolutionPreset
 import java.util.*
 
 
@@ -47,7 +46,7 @@ object CameraUtils {
             val details = HashMap<String, Any>()
             val characteristics = cameraManager.getCameraCharacteristics(cameraName)
             details["name"] = cameraName
-            val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+            val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)!! // fixme
             details["sensorOrientation"] = sensorOrientation
             val lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING)
             when (lensFacing) {

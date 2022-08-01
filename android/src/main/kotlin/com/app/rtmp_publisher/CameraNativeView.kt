@@ -22,17 +22,23 @@ import net.ossrs.rtmp.ConnectCheckerRtmp
 import java.io.*
 
 
+// Mirrors camera.dart
+enum class ResolutionPreset {
+    low, medium, high, veryHigh, ultraHigh, max
+}
+
 class CameraNativeView(
+        private var context: Context? = null,
         private var activity: Activity? = null,
         private var enableAudio: Boolean = false,
-        private val preset: Camera.ResolutionPreset,
+        private val preset: ResolutionPreset,
         private var cameraName: String,
         private var dartMessenger: DartMessenger? = null) :
         PlatformView,
         SurfaceHolder.Callback,
         ConnectCheckerRtmp {
 
-    private val glView = LightOpenGlView(activity)
+    private val glView = LightOpenGlView(context)
     private val rtmpCamera: RtmpCamera2
 
     private var isSurfaceCreated = false
@@ -84,11 +90,11 @@ class CameraNativeView(
         }
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         Log.d("CameraNativeView", "surfaceChanged $width $height")
     }
 
-    override fun surfaceDestroyed(holder: SurfaceHolder?) {
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
         Log.d("CameraNativeView", "surfaceDestroyed")
     }
 
@@ -115,13 +121,22 @@ class CameraNativeView(
         }
     }
 
-    fun startVideoRecording(filePath: String?, result: MethodChannel.Result) {
+    fun startVideoRecording(filePath: String, result: MethodChannel.Result) {
         val file = File(filePath)
         if (file.exists()) {
             result.error("fileExists", "File at path '$filePath' already exists. Cannot overwrite.", null)
             return
         }
         Log.d("CameraNativeView", "startVideoRecording filePath: $filePath result: $result")
+
+        if (!rtmpCamera.isStreaming) {
+            if (rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo()) {
+                rtmpCamera.startRecord(filePath)
+            }
+        } else {
+            rtmpCamera.startRecord(filePath)
+        }
+        result.success(null)
     }
 
     fun startVideoStreaming(url: String?, result: MethodChannel.Result) {
@@ -267,6 +282,7 @@ class CameraNativeView(
 
     override fun dispose() {
         isSurfaceCreated = false
+        context = null
         activity = null
     }
 

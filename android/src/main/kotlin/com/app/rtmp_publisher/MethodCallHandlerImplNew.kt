@@ -44,7 +44,7 @@ class MethodCallHandlerImplNew(
         flutterEngine
                 .platformViewsController
                 .registry
-                .registerViewFactory("hybrid-view-type", nativeViewFactory)
+                .registerViewFactory("hybrid-view-type", nativeViewFactory!!) // fixme
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -179,7 +179,7 @@ class MethodCallHandlerImplNew(
             val enableAudio = call.argument<Boolean>("enableAudio")!!
             dartMessenger = DartMessenger(messenger, textureId)
 
-            val preset = Camera.ResolutionPreset.valueOf(resolutionPreset)
+            val preset = ResolutionPreset.valueOf(resolutionPreset)
             val previewSize = CameraUtils.computeBestPreviewSize(cameraName, preset)
             val reply: MutableMap<String, Any> = HashMap()
             reply["textureId"] = textureId
