@@ -132,6 +132,9 @@ class CameraNativeView(
         if (!rtmpCamera.isStreaming) {
             if (rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo()) {
                 rtmpCamera.startRecord(filePath)
+            } else {
+                result.error("videoRecordingFailed", "Error preparing stream, This device cant do it", null)
+                return
             }
         } else {
             rtmpCamera.startRecord(filePath)
@@ -159,8 +162,6 @@ class CameraNativeView(
                     result.error("videoStreamingFailed", "Error preparing stream, This device cant do it", null)
                     return
                 }
-            } else {
-                rtmpCamera.stopStream()
             }
             result.success(null)
         } catch (e: CameraAccessException) {
@@ -172,15 +173,17 @@ class CameraNativeView(
 
     fun startVideoRecordingAndStreaming(filePath: String?, url: String?, result: MethodChannel.Result) {
         Log.d("CameraNativeView", "startVideoStreaming url: $url")
-        // TODO: Implement video recording
+        if (filePath != null) {
+            startVideoRecording(filePath, result)
+        }
         startVideoStreaming(url, result)
     }
 
-    fun pauseVideoStreaming(result: Any) {
+    fun pauseVideoStreaming(result: MethodChannel.Result) {
         // TODO: Implement pause video streaming
     }
 
-    fun resumeVideoStreaming(result: Any) {
+    fun resumeVideoStreaming(result: MethodChannel.Result) {
         // TODO: Implement resume video streaming
     }
 
@@ -224,12 +227,32 @@ class CameraNativeView(
         }
     }
 
-    fun pauseVideoRecording(result: Any) {
-        // TODO: Implement pause Video Recording
+    fun pauseVideoRecording(result: MethodChannel.Result) {
+        if (!rtmpCamera.isRecording) {
+            result.success(null)
+            return
+        }
+        try {
+            rtmpCamera.pauseRecord()
+        } catch (e: IllegalStateException) {
+            result.error("videoRecordingFailed", e.message, null)
+            return
+        }
+        result.success(null)
     }
 
-    fun resumeVideoRecording(result: Any) {
-        // TODO: Implement resume video recording
+    fun resumeVideoRecording(result: MethodChannel.Result) {
+        if (!rtmpCamera.isRecording) {
+            result.success(null)
+            return
+        }
+        try {
+            rtmpCamera.resumeRecord()
+        } catch (e: IllegalStateException) {
+            result.error("videoRecordingFailed", e.message, null)
+            return
+        }
+        result.success(null)
     }
 
     fun startPreviewWithImageStream(imageStreamChannel: Any) {

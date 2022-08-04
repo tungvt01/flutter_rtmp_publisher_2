@@ -47,7 +47,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   bool enableAudio = true;
   bool useOpenGL = true;
   TextEditingController _textFieldController =
-      TextEditingController(text: "rtmp://192.168.0.6/live");
+      TextEditingController(text: "rtmp://192.168.0.10/live");
 
   bool get isStreaming => controller?.value?.isStreamingVideoRtmp ?? false;
   bool isVisible = true;
@@ -395,13 +395,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     });
   }
 
+  // TODO(bigmikehoncho): Add ability to stop just the video recording
   void onStopButtonPressed() {
-    if (this.controller.value.isStreamingVideoRtmp) {
+    if (controller.value.isStreamingVideoRtmp) {
       stopVideoStreaming().then((_) {
         if (mounted) setState(() {});
         showInSnackBar('Video streamed to: $url');
       });
-    } else {
+    }
+    if(controller.value.isRecordingVideo) {
       stopVideoRecording().then((_) {
         if (mounted) setState(() {});
         showInSnackBar('Video recorded to: $videoPath');

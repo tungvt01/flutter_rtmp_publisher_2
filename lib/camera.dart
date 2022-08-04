@@ -693,9 +693,9 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
     try {
       value =
-          value.copyWith(isRecordingVideo: false, isStreamingVideoRtmp: false);
+          value.copyWith(isRecordingVideo: false);
       await _channel.invokeMethod<void>(
-        'stopRecordingOrStreaming',
+        'stopRecording',
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
@@ -874,10 +874,10 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
     try {
       value =
-          value.copyWith(isStreamingVideoRtmp: false, isRecordingVideo: false);
+          value.copyWith(isStreamingVideoRtmp: false);
       print("Stop video streaming call");
       await _channel.invokeMethod<void>(
-        'stopRecordingOrStreaming',
+        'stopStreaming',
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
