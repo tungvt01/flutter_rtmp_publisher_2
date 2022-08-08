@@ -3,7 +3,6 @@ package com.app.rtmp_publisher
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Point
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -11,14 +10,13 @@ import android.hardware.camera2.CameraMetadata
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.View
-import android.widget.Toast
 import com.pedro.encoder.input.video.CameraHelper.Facing.BACK
 import com.pedro.encoder.input.video.CameraHelper.Facing.FRONT
+import com.pedro.rtmp.utils.ConnectCheckerRtmp
 import com.pedro.rtplibrary.rtmp.RtmpCamera2
 import com.pedro.rtplibrary.view.LightOpenGlView
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
-import net.ossrs.rtmp.ConnectCheckerRtmp
 import java.io.*
 
 
@@ -78,6 +76,9 @@ class CameraNativeView(
         }
     }
 
+    override fun onConnectionStartedRtmp(rtmpUrl: String) {
+    }
+
     override fun onAuthErrorRtmp() {
         activity?.runOnUiThread {
             dartMessenger?.send(DartMessenger.EventType.ERROR, "Auth error")
@@ -130,7 +131,7 @@ class CameraNativeView(
         Log.d("CameraNativeView", "startVideoRecording filePath: $filePath result: $result")
 
         if (!rtmpCamera.isStreaming) {
-            if (rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo()) {
+            if (rtmpCamera.prepareAudio(64 * 1024, 32000, true, true, true) && rtmpCamera.prepareVideo()) {
                 rtmpCamera.startRecord(filePath)
             } else {
                 result.error("videoRecordingFailed", "Error preparing stream, This device cant do it", null)

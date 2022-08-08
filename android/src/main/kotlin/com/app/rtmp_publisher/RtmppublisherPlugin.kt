@@ -15,7 +15,7 @@ import io.flutter.view.TextureRegistry
 import io.flutter.embedding.engine.FlutterEngine
 
 interface PermissionStuff {
-    fun adddListener(listener: PluginRegistry.RequestPermissionsResultListener);
+    fun addListener(listener: PluginRegistry.RequestPermissionsResultListener);
 }
 
 /** RtmppublisherPlugin */
@@ -45,10 +45,6 @@ public class RtmppublisherPlugin : FlutterPlugin, ActivityAware {
             messenger: BinaryMessenger,
             permissionsRegistry: PermissionStuff,
             flutterEngine: FlutterEngine) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            // If the sdk is less than 21 (min sdk for Camera2) we don't register the plugin.
-            return
-        }
         methodCallHandler = MethodCallHandlerImplNew(
                 activity,
                 messenger,
@@ -74,7 +70,7 @@ public class RtmppublisherPlugin : FlutterPlugin, ActivityAware {
                     binding.activity,
                     binaryMessenger,
                     object : PermissionStuff {
-                        override fun adddListener(listener: PluginRegistry.RequestPermissionsResultListener) {
+                        override fun addListener(listener: PluginRegistry.RequestPermissionsResultListener) {
                             binding.addRequestPermissionsResultListener(listener);
                         }
                     },
