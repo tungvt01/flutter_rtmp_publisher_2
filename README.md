@@ -4,7 +4,7 @@ RTMP streaming and camera plugin.
 
 ## Getting Started
 
-This plugin is a fork of [flutter_rtmp_publisher](https://github.com/nhancv/flutter_rtmp_publisher)
+This plugin is a fork of [flutter_rtmp_publisher](https://github.com/nhancv/flutter_rtmp_publisher).
 
 This plugin is an extension of the flutter 
 [camera plugin](https://pub.dev/packages/camera) to add in
