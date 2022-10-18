@@ -21,13 +21,13 @@ class CameraExampleHome extends StatefulWidget {
 }
 
 /// Returns a suitable camera icon for [direction].
-IconData getCameraLensIcon(CameraLensDirection direction) {
+IconData getCameraLensIcon(RtmpCameraLensDirection direction) {
   switch (direction) {
-    case CameraLensDirection.back:
+    case RtmpCameraLensDirection.back:
       return Icons.camera_rear;
-    case CameraLensDirection.front:
+    case RtmpCameraLensDirection.front:
       return Icons.camera_front;
-    case CameraLensDirection.external:
+    case RtmpCameraLensDirection.external:
       return Icons.camera;
   }
   throw ArgumentError('Unknown lens direction');
@@ -38,7 +38,7 @@ void logError(String code, String message) =>
 
 class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver {
-  CameraController controller;
+  RtmpCameraController controller;
   String imagePath;
   String videoPath;
   String url;
@@ -47,7 +47,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   bool enableAudio = true;
   bool useOpenGL = true;
   TextEditingController _textFieldController =
-      TextEditingController(text: "rtmp://192.168.0.10/live");
+      TextEditingController(text: "rtmp://45.124.95.153:1935/live/live");
 
   bool get isStreaming => controller?.value?.isStreamingVideoRtmp ?? false;
   bool isVisible = true;
@@ -73,18 +73,17 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
     if (state == AppLifecycleState.paused) {
       isVisible = false;
-      if(isStreaming) {
+      if (isStreaming) {
         await pauseVideoStreaming();
       }
     } else if (state == AppLifecycleState.resumed) {
       isVisible = true;
       if (controller != null) {
-        if(isStreaming) {
+        if (isStreaming) {
           await resumeVideoStreaming();
         } else {
           onNewCameraSelected(controller.description);
         }
-
       }
     }
   }
@@ -285,11 +284,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     if (cameras.isEmpty) {
       return const Text('No camera found');
     } else {
-      for (CameraDescription cameraDescription in cameras) {
+      for (RtmpCameraDescription cameraDescription in cameras) {
         toggles.add(
           SizedBox(
             width: 90.0,
-            child: RadioListTile<CameraDescription>(
+            child: RadioListTile<RtmpCameraDescription>(
               title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
               groupValue: controller?.description,
               value: cameraDescription,
@@ -308,17 +307,18 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
 
   void showInSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void onNewCameraSelected(CameraDescription cameraDescription) async {
+  void onNewCameraSelected(RtmpCameraDescription cameraDescription) async {
     if (controller != null) {
       await stopVideoStreaming();
       await controller.dispose();
     }
-    controller = CameraController(
+    controller = RtmpCameraController(
       cameraDescription,
-      ResolutionPreset.medium,
+      RtmpResolutionPreset.medium,
       enableAudio: enableAudio,
       androidUseOpenGL: useOpenGL,
     );
@@ -332,7 +332,8 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       } else {
         try {
           final Map<dynamic, dynamic> event =
-          controller.value.event as Map<dynamic, dynamic>;
+              controller.value.event as Map<dynamic, dynamic>;
+          print('Event ------>>>>>>  $event');
           if (event != null) {
             print('Event $event');
             final String eventType = event['eventType'] as String;
@@ -403,7 +404,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
         showInSnackBar('Video streamed to: $url');
       });
     }
-    if(controller.value.isRecordingVideo) {
+    if (controller.value.isRecordingVideo) {
       stopVideoRecording().then((_) {
         if (mounted) setState(() {});
         showInSnackBar('Video recorded to: $videoPath');
@@ -606,7 +607,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   }
 
   Future<void> stopVideoStreaming() async {
-
     if (controller == null || !controller.value.isInitialized) {
       return;
     }
@@ -710,7 +710,7 @@ class CameraApp extends StatelessWidget {
   }
 }
 
-List<CameraDescription> cameras = [];
+List<RtmpCameraDescription> cameras = [];
 
 Future<void> main() async {
   // Fetch the available cameras before initializing the app.

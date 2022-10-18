@@ -23,15 +23,15 @@ void main() {
     await testDir.delete(recursive: true);
   });
 
-  final Map<ResolutionPreset, Size> presetExpectedSizes =
-      <ResolutionPreset, Size>{
-    ResolutionPreset.low:
+  final Map<RtmpResolutionPreset, Size> presetExpectedSizes =
+      <RtmpResolutionPreset, Size>{
+    RtmpResolutionPreset.low:
         Platform.isAndroid ? const Size(240, 320) : const Size(288, 352),
-    ResolutionPreset.medium:
+    RtmpResolutionPreset.medium:
         Platform.isAndroid ? const Size(480, 720) : const Size(480, 640),
-    ResolutionPreset.high: const Size(720, 1280),
-    ResolutionPreset.veryHigh: const Size(1080, 1920),
-    ResolutionPreset.ultraHigh: const Size(2160, 3840),
+    RtmpResolutionPreset.high: const Size(720, 1280),
+    RtmpResolutionPreset.veryHigh: const Size(1080, 1920),
+    RtmpResolutionPreset.ultraHigh: const Size(2160, 3840),
     // Don't bother checking for max here since it could be anything.
   };
 
@@ -49,7 +49,7 @@ void main() {
   // automatic code to fall back to smaller sizes when we need to. Returns
   // whether the image is exactly the desired resolution.
   Future<bool> testCaptureImageResolution(
-      CameraController controller, ResolutionPreset preset) async {
+      RtmpCameraController controller, RtmpResolutionPreset preset) async {
     final Size expectedSize = presetExpectedSizes[preset];
     print(
         'Capturing photo at $preset (${expectedSize.width}x${expectedSize.height}) using camera ${controller.description.name}');
@@ -71,16 +71,16 @@ void main() {
 
   testWidgets('Capture specific image resolutions',
       (WidgetTester tester) async {
-    final List<CameraDescription> cameras = await availableCameras();
+    final List<RtmpCameraDescription> cameras = await availableCameras();
     if (cameras.isEmpty) {
       return;
     }
-    for (CameraDescription cameraDescription in cameras) {
+    for (RtmpCameraDescription cameraDescription in cameras) {
       bool previousPresetExactlySupported = true;
-      for (MapEntry<ResolutionPreset, Size> preset
+      for (MapEntry<RtmpResolutionPreset, Size> preset
           in presetExpectedSizes.entries) {
-        final CameraController controller =
-            CameraController(cameraDescription, preset.key);
+        final RtmpCameraController controller =
+            RtmpCameraController(cameraDescription, preset.key);
         await controller.initialize();
         final bool presetExactlySupported =
             await testCaptureImageResolution(controller, preset.key);
@@ -96,7 +96,7 @@ void main() {
   // automatic code to fall back to smaller sizes when we need to. Returns
   // whether the image is exactly the desired resolution.
   Future<bool> testCaptureVideoResolution(
-      CameraController controller, ResolutionPreset preset) async {
+      RtmpCameraController controller, RtmpResolutionPreset preset) async {
     final Size expectedSize = presetExpectedSizes[preset];
     print(
         'Capturing video at $preset (${expectedSize.width}x${expectedSize.height}) using camera ${controller.description.name}');
@@ -123,16 +123,16 @@ void main() {
 
   testWidgets('Capture specific video resolutions',
       (WidgetTester tester) async {
-    final List<CameraDescription> cameras = await availableCameras();
+    final List<RtmpCameraDescription> cameras = await availableCameras();
     if (cameras.isEmpty) {
       return;
     }
-    for (CameraDescription cameraDescription in cameras) {
+    for (RtmpCameraDescription cameraDescription in cameras) {
       bool previousPresetExactlySupported = true;
-      for (MapEntry<ResolutionPreset, Size> preset
+      for (MapEntry<RtmpResolutionPreset, Size> preset
           in presetExpectedSizes.entries) {
-        final CameraController controller =
-            CameraController(cameraDescription, preset.key);
+        final RtmpCameraController controller =
+            RtmpCameraController(cameraDescription, preset.key);
         await controller.initialize();
         await controller.prepareForVideoRecording();
         final bool presetExactlySupported =
@@ -146,14 +146,14 @@ void main() {
   }, skip: !Platform.isAndroid);
 
   testWidgets('Pause and resume video recording', (WidgetTester tester) async {
-    final List<CameraDescription> cameras = await availableCameras();
+    final List<RtmpCameraDescription> cameras = await availableCameras();
     if (cameras.isEmpty) {
       return;
     }
 
-    final CameraController controller = CameraController(
+    final RtmpCameraController controller = RtmpCameraController(
       cameras[0],
-      ResolutionPreset.low,
+      RtmpResolutionPreset.low,
       enableAudio: false,
     );
 
@@ -204,14 +204,14 @@ void main() {
   testWidgets(
     'Android image streaming',
     (WidgetTester tester) async {
-      final List<CameraDescription> cameras = await availableCameras();
+      final List<RtmpCameraDescription> cameras = await availableCameras();
       if (cameras.isEmpty) {
         return;
       }
 
-      final CameraController controller = CameraController(
+      final RtmpCameraController controller = RtmpCameraController(
         cameras[0],
-        ResolutionPreset.low,
+        RtmpResolutionPreset.low,
         enableAudio: false,
       );
 

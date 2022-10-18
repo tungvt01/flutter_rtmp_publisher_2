@@ -13,14 +13,14 @@ import 'package:flutter/widgets.dart';
 part 'camera_image.dart';
 
 final MethodChannel _channel =
-const MethodChannel('plugins.flutter.io/rtmp_publisher');
+    const MethodChannel('plugins.flutter.io/rtmp_publisher');
 
-enum CameraLensDirection { front, back, external }
+enum RtmpCameraLensDirection { front, back, external }
 
 /// Affect the quality of video recording and image capture:
 ///
 /// If a preset is not available on the camera being used a preset of lower quality will be selected automatically.
-enum ResolutionPreset {
+enum RtmpResolutionPreset {
   /// 352x288 on iOS, 240p (320x240) on Android
   low,
 
@@ -44,31 +44,31 @@ enum ResolutionPreset {
 typedef onLatestImageAvailable = Function(CameraImage image);
 
 /// Returns the resolution preset as a String.
-String serializeResolutionPreset(ResolutionPreset resolutionPreset) {
+String serializeResolutionPreset(RtmpResolutionPreset resolutionPreset) {
   switch (resolutionPreset) {
-    case ResolutionPreset.max:
+    case RtmpResolutionPreset.max:
       return 'max';
-    case ResolutionPreset.ultraHigh:
+    case RtmpResolutionPreset.ultraHigh:
       return 'ultraHigh';
-    case ResolutionPreset.veryHigh:
+    case RtmpResolutionPreset.veryHigh:
       return 'veryHigh';
-    case ResolutionPreset.high:
+    case RtmpResolutionPreset.high:
       return 'high';
-    case ResolutionPreset.medium:
+    case RtmpResolutionPreset.medium:
       return 'medium';
-    case ResolutionPreset.low:
+    case RtmpResolutionPreset.low:
       return 'low';
   }
 }
 
-CameraLensDirection _parseCameraLensDirection(String string) {
+RtmpCameraLensDirection _parseCameraLensDirection(String string) {
   switch (string) {
     case 'front':
-      return CameraLensDirection.front;
+      return RtmpCameraLensDirection.front;
     case 'back':
-      return CameraLensDirection.back;
+      return RtmpCameraLensDirection.back;
     case 'external':
-      return CameraLensDirection.external;
+      return RtmpCameraLensDirection.external;
   }
   throw ArgumentError('Unknown CameraLensDirection value');
 }
@@ -76,16 +76,15 @@ CameraLensDirection _parseCameraLensDirection(String string) {
 /// Completes with a list of available cameras.
 ///
 /// May throw a [CameraException].
-Future<List<CameraDescription>> availableCameras() async {
+Future<List<RtmpCameraDescription>> availableCameras() async {
   try {
     final List<Map<dynamic, dynamic>>? cameras = await _channel
         .invokeListMethod<Map<dynamic, dynamic>>('availableCameras');
     if (cameras == null) {
       throw CameraException('invalid', 'Unable to communicate with the plugin');
-
     }
     return cameras.map((Map<dynamic, dynamic> camera) {
-      return CameraDescription(
+      return RtmpCameraDescription(
         name: camera['name'],
         lensDirection: _parseCameraLensDirection(camera['lensFacing']),
         sensorOrientation: camera['sensorOrientation'],
@@ -96,11 +95,14 @@ Future<List<CameraDescription>> availableCameras() async {
   }
 }
 
-class CameraDescription {
-  CameraDescription({required this.name, required this.lensDirection, required this.sensorOrientation});
+class RtmpCameraDescription {
+  RtmpCameraDescription(
+      {required this.name,
+      required this.lensDirection,
+      required this.sensorOrientation});
 
   final String name;
-  final CameraLensDirection lensDirection;
+  final RtmpCameraLensDirection lensDirection;
 
   /// Clockwise angle through which the output image needs to be rotated to be upright on the device screen in its native orientation.
   ///
@@ -113,7 +115,7 @@ class CameraDescription {
 
   @override
   bool operator ==(Object o) {
-    return o is CameraDescription &&
+    return o is RtmpCameraDescription &&
         o.name == name &&
         o.lensDirection == lensDirection;
   }
@@ -175,7 +177,7 @@ class CameraException implements Exception {
 class CameraPreview extends StatelessWidget {
   const CameraPreview(this.controller);
 
-  final CameraController controller;
+  final RtmpCameraController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -204,9 +206,9 @@ class CameraPreview extends StatelessWidget {
   }
 }
 
-/// The state of a [CameraController].
-class CameraValue {
-  const CameraValue({
+/// The state of a [RtmpCameraController].
+class RtmpCameraValue {
+  const RtmpCameraValue({
     required this.isInitialized,
     this.errorDescription,
     this.previewSize,
@@ -221,20 +223,20 @@ class CameraValue {
   })  : _isRecordingPaused = isRecordingPaused,
         _isStreamingPaused = isStreamingPaused;
 
-  const CameraValue.uninitialized()
+  const RtmpCameraValue.uninitialized()
       : this(
-    isInitialized: false,
-    isRecordingVideo: false,
-    isTakingPicture: false,
-    isStreamingImages: false,
-    isStreamingVideoRtmp: false,
-    isRecordingPaused: false,
-    isStreamingPaused: false,
-    previewQuarterTurns: 0,
-    event: null,
-  );
+          isInitialized: false,
+          isRecordingVideo: false,
+          isTakingPicture: false,
+          isStreamingImages: false,
+          isStreamingVideoRtmp: false,
+          isRecordingPaused: false,
+          isStreamingPaused: false,
+          previewQuarterTurns: 0,
+          event: null,
+        );
 
-  /// True after [CameraController.initialize] has completed successfully.
+  /// True after [RtmpCameraController.initialize] has completed successfully.
   final bool isInitialized;
 
   /// True when a picture capture request has been sent but as not yet returned.
@@ -280,7 +282,7 @@ class CameraValue {
 
   bool get hasError => errorDescription != null;
 
-  CameraValue copyWith({
+  RtmpCameraValue copyWith({
     bool? isInitialized,
     bool? isRecordingVideo,
     bool? isStreamingVideoRtmp,
@@ -293,7 +295,7 @@ class CameraValue {
     bool? isStreamingPaused,
     dynamic event,
   }) {
-    return CameraValue(
+    return RtmpCameraValue(
       isInitialized: isInitialized ?? this.isInitialized,
       errorDescription: errorDescription,
       previewSize: previewSize ?? this.previewSize,
@@ -326,21 +328,21 @@ class CameraValue {
 ///
 /// Use [availableCameras] to get a list of available cameras.
 ///
-/// Before using a [CameraController] a call to [initialize] must complete.
+/// Before using a [RtmpCameraController] a call to [initialize] must complete.
 ///
 /// To show the camera preview on the screen use a [CameraPreview] widget.
-class CameraController extends ValueNotifier<CameraValue> {
-  CameraController(
-      this.description,
-      this.resolutionPreset, {
-        this.enableAudio = true,
-        this.streamingPreset,
-        this.androidUseOpenGL = false,
-      }) : super(const CameraValue.uninitialized());
+class RtmpCameraController extends ValueNotifier<RtmpCameraValue> {
+  RtmpCameraController(
+    this.description,
+    this.resolutionPreset, {
+    this.enableAudio = true,
+    this.streamingPreset,
+    this.androidUseOpenGL = false,
+  }) : super(const RtmpCameraValue.uninitialized());
 
-  final CameraDescription description;
-  final ResolutionPreset resolutionPreset;
-  final ResolutionPreset? streamingPreset;
+  final RtmpCameraDescription description;
+  final RtmpResolutionPreset resolutionPreset;
+  final RtmpResolutionPreset? streamingPreset;
 
   /// Whether to include audio when recording a video.
   final bool enableAudio;
@@ -362,23 +364,23 @@ class CameraController extends ValueNotifier<CameraValue> {
     try {
       _creatingCompleter = Completer<void>();
       final Map<String, dynamic>? reply =
-      await _channel.invokeMapMethod<String, dynamic>(
+          await _channel.invokeMapMethod<String, dynamic>(
         'initialize',
         <String, dynamic>{
           'cameraName': description.name,
           'resolutionPreset': serializeResolutionPreset(resolutionPreset),
           'streamingPreset':
-          serializeResolutionPreset(streamingPreset ?? resolutionPreset),
+              serializeResolutionPreset(streamingPreset ?? resolutionPreset),
           'enableAudio': enableAudio,
           'enableAndroidOpenGL': androidUseOpenGL
         },
       );
       if (reply == null) {
-        throw CameraException('invalid', 'Unable top communicate with the camera platform channel');
+        throw CameraException('invalid',
+            'Unable top communicate with the camera platform channel');
       }
       if (reply['textureId'] == null) {
         throw CameraException('invalid', 'textureID is null');
-
       }
       _textureId = reply['textureId']!;
       value = value.copyWith(
@@ -393,7 +395,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
     _eventSubscription = EventChannel(
-        'plugins.flutter.io/rtmp_publisher/cameraEvents$_textureId')
+            'plugins.flutter.io/rtmp_publisher/cameraEvents$_textureId')
         .receiveBroadcastStream()
         .listen(_listener);
     _creatingCompleter.complete();
@@ -519,7 +521,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// latest image available from the camera and will drop all other images.
   ///
   /// When running continuously with [CameraPreview] widget, this function runs
-  /// best with [ResolutionPreset.low]. Running on [ResolutionPreset.high] can
+  /// best with [RtmpResolutionPreset.low]. Running on [RtmpResolutionPreset.high] can
   /// have significant frame rate drops for [CameraPreview] on lower end
   /// devices.
   ///
@@ -556,16 +558,16 @@ class CameraController extends ValueNotifier<CameraValue> {
       await _channel.invokeMethod<void>('startImageStream');
       value = value.copyWith(isStreamingImages: true);
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
     const EventChannel cameraEventChannel =
-    EventChannel('plugins.flutter.io/rtmp_publisher/imageStream');
+        EventChannel('plugins.flutter.io/rtmp_publisher/imageStream');
     _imageStreamSubscription =
         cameraEventChannel.receiveBroadcastStream().listen(
-              (dynamic imageData) {
-            onAvailable(CameraImage._fromPlatformData(imageData));
-          },
-        );
+      (dynamic imageData) {
+        onAvailable(CameraImage._fromPlatformData(imageData));
+      },
+    );
   }
 
   /// Stop streaming images from platform camera.
@@ -590,7 +592,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       value = value.copyWith(isStreamingImages: false);
       await _channel.invokeMethod<void>('stopImageStream');
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
 
     await _imageStreamSubscription?.cancel();
@@ -632,7 +634,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         droppedVideoFrames: data["droppedVideoFrames"],
       );
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -673,7 +675,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
       value = value.copyWith(isRecordingVideo: true, isRecordingPaused: false);
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -692,14 +694,13 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
     try {
-      value =
-          value.copyWith(isRecordingVideo: false);
+      value = value.copyWith(isRecordingVideo: false);
       await _channel.invokeMethod<void>(
         'stopRecording',
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -726,7 +727,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -753,7 +754,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -808,7 +809,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       value =
           value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -854,7 +855,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       value =
           value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -873,8 +874,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
     try {
-      value =
-          value.copyWith(isStreamingVideoRtmp: false);
+      value = value.copyWith(isStreamingVideoRtmp: false);
       print("Stop video streaming call");
       await _channel.invokeMethod<void>(
         'stopStreaming',
@@ -882,7 +882,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     } on PlatformException catch (e) {
       print("Got exception " + e.toString());
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -909,7 +909,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         await _channel.invokeMethod<void>('stopImageStream');
       }
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -936,7 +936,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
@@ -963,7 +963,7 @@ class CameraController extends ValueNotifier<CameraValue> {
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
-      throw CameraException(e.code, e.message?? 'Unknown exception');
+      throw CameraException(e.code, e.message ?? 'Unknown exception');
     }
   }
 
