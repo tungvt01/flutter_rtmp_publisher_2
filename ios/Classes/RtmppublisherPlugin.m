@@ -1081,7 +1081,9 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                                                                        stringWithFormat:@"plugins.flutter.io/rtmp_publisher/cameraEvents%lld",
                                                                        textureId]
                                                  binaryMessenger:_messenger];
-            [eventChannel setStreamHandler:cam];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [eventChannel setStreamHandler:cam];
+                });
             cam.eventChannel = eventChannel;
             result(@{
                 @"textureId" : @(textureId),
