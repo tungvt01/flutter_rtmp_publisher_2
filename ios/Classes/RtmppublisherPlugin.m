@@ -21,7 +21,7 @@ static FlutterError *getFlutterError(NSError *error) {
 }
 
 
-@interface FLTSavePhotoDelegate : NSObject <AVCapturePhotoCaptureDelegate>
+@interface RtmpFLTSavePhotoDelegate : NSObject <AVCapturePhotoCaptureDelegate>
 @property(readonly, nonatomic) NSString *path;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
@@ -33,11 +33,11 @@ static FlutterError *getFlutterError(NSError *error) {
 cameraPosition:(AVCaptureDevicePosition)cameraPosition;
 @end
 
-@interface FLTImageStreamHandler : NSObject <FlutterStreamHandler>
+@interface RtmpFLTImageStreamHandler : NSObject <FlutterStreamHandler>
 @property FlutterEventSink eventSink;
 @end
 
-@implementation FLTImageStreamHandler
+@implementation RtmpFLTImageStreamHandler
 
 - (FlutterError *_Nullable)onCancelWithArguments:(id _Nullable)arguments {
     _eventSink = nil;
@@ -53,8 +53,8 @@ cameraPosition:(AVCaptureDevicePosition)cameraPosition;
 
 // Used to keep the delegate alive until
 // didFinishProcessingPhotoSampleBuffer.
-@implementation FLTSavePhotoDelegate {
-    FLTSavePhotoDelegate *selfReference;
+@implementation RtmpFLTSavePhotoDelegate {
+    RtmpFLTSavePhotoDelegate *selfReference;
 }
 
 - initWithPath:(NSString *)path
@@ -164,7 +164,7 @@ static ResolutionPreset getResolutionPresetForString(NSString *preset) {
     }
 }
 
-@interface FLTCam : NSObject <FlutterTexture,
+@interface RtmpFLTCam : NSObject <FlutterTexture,
 AVCaptureVideoDataOutputSampleBufferDelegate,
 AVCaptureAudioDataOutputSampleBufferDelegate,
 FlutterStreamHandler>
@@ -172,7 +172,7 @@ FlutterStreamHandler>
 @property(nonatomic, copy) void (^onFrameAvailable)();
 @property BOOL enableAudio;
 @property(nonatomic) FlutterEventChannel *eventChannel;
-@property(nonatomic) FLTImageStreamHandler *imageStreamHandler;
+@property(nonatomic) RtmpFLTImageStreamHandler *imageStreamHandler;
 @property(nonatomic) FlutterEventSink eventSink;
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
@@ -224,7 +224,7 @@ FlutterStreamHandler>
 - (void)captureToFile:(NSString *)filename result:(FlutterResult)result;
 @end
 
-@implementation FLTCam {
+@implementation RtmpFLTCam {
     dispatch_queue_t _dispatchQueue;
 }
 // Format used for video and image streaming.
@@ -302,7 +302,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
     [_capturePhotoOutput
      capturePhotoWithSettings:settings
-     delegate:[[FLTSavePhotoDelegate alloc] initWithPath:path
+     delegate:[[RtmpFLTSavePhotoDelegate alloc] initWithPath:path
                                                   result:result
                                            motionManager:_motionManager
                                           cameraPosition:_captureDevice.position]];
@@ -851,7 +851,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/rtmp_publisher/imageStream"
                                   binaryMessenger:messenger];
         
-        _imageStreamHandler = [[FLTImageStreamHandler alloc] init];
+        _imageStreamHandler = [[RtmpFLTImageStreamHandler alloc] init];
         [eventChannel setStreamHandler:_imageStreamHandler];
         
         _isStreamingImages = YES;
@@ -989,7 +989,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 @interface RtmppublisherPlugin ()
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
-@property(readonly, nonatomic) FLTCam *camera;
+@property(readonly, nonatomic) RtmpFLTCam *camera;
 @end
 
 @implementation RtmppublisherPlugin {
@@ -1059,7 +1059,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         NSString *streamingPreset = call.arguments[@"streamingPreset"];
         NSNumber *enableAudio = call.arguments[@"enableAudio"];
         NSError *error;
-        FLTCam *cam = [[FLTCam alloc] initWithCameraName:cameraName
+        RtmpFLTCam *cam = [[RtmpFLTCam alloc] initWithCameraName:cameraName
                                         resolutionPreset:resolutionPreset
                                          streamingPreset:streamingPreset
                                              enableAudio:[enableAudio boolValue]
